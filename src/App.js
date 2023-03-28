@@ -1,13 +1,35 @@
+import * as React from "react";
+import "./App.css";
+import { useDispatch, useSelector } from "react-redux";
+import { Provider } from "react-redux";
+import store from "./store";
 
-import * as React from 'react';
+// eslint-disable-next-line no-unused-vars
+function calculateStatus(winner, squares, nextValue) {
+  return winner
+    ? `Winner: ${winner}`
+    : squares.every(Boolean)
+    ? `Scratch: Cat's game`
+    : `Next player: ${nextValue}`;
+}
 
 function Board() {
-  const squares = Array(9).fill(null);
-  function selectSquare(square) {
+  const dispatch = useDispatch();
+  const squares = useSelector((state) => state.squares);
+  const nextValue = useSelector((state) => state.nextValue);
+  const winner = useSelector((state) => state.winner);
+  const status = calculateStatus(winner, squares, nextValue);
 
+  function selectSquare(square) {
+    if (winner || squares[square]) {
+      return;
+    }
+    const next = nextValue === "X" ? "O" : "X";
+    dispatch({ type: "SELECT_SQUARE", payload: { square, next } });
   }
 
   function restart() {
+    dispatch({ type: "RESTART" });
   }
 
   function renderSquare(i) {
@@ -19,25 +41,31 @@ function Board() {
   }
 
   return (
-    <div>
-      <div >STATUS</div>
-      <div >
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
+    <div className=" container flex flex-col items-center justify-center h-screen">
+      <h1 className="text-3xl font-extrabold mb-4">Tic-Tac-Toe</h1>
+      <div className="status text-2xl font-bold mb-4">{status}</div>
+      <div className="board grid">
+        <div className="rows">
+          <div className="square">{renderSquare(0)}</div>
+          <div className="square">{renderSquare(1)}</div>
+          <div className="square">{renderSquare(2)}</div>
+        </div>
+        <div className="rows">
+          <div className="square">{renderSquare(3)}</div>
+          <div className="square">{renderSquare(4)}</div>
+          <div className="square">{renderSquare(5)}</div>
+        </div>
+        <div className="rows">
+          <div className="square">{renderSquare(6)}</div>
+          <div className="square">{renderSquare(7)}</div>
+          <div className="square">{renderSquare(8)}</div>
+        </div>
       </div>
-      <div >
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
-      </div>
-      <div >
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
-      </div>
-      <button onClick={restart}>
-        restart
+      <button
+        className="restart block mx-auto text-2xl font-bold py-2 px-4 rounded bg-blue-500 hover:bg-blue-700 text-white mt-8"
+        onClick={restart}
+      >
+        Restart
       </button>
     </div>
   );
@@ -45,47 +73,12 @@ function Board() {
 
 function Game() {
   return (
-    <div >
-      <div >
+    <Provider store={store}>
+      <div>
         <Board />
       </div>
-    </div>
+    </Provider>
   );
-}
-
-// eslint-disable-next-line no-unused-vars
-function calculateStatus(winner, squares, nextValue) {
-  return winner
-    ? `Winner: ${winner}`
-    : squares.every(Boolean)
-      ? `Scratch: Cat's game`
-      : `Next player: ${nextValue}`;
-}
-
-// eslint-disable-next-line no-unused-vars
-function calculateNextValue(squares) {
-  return squares.filter(Boolean).length % 2 === 0 ? 'X' : 'O';
-}
-
-// eslint-disable-next-line no-unused-vars
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-  return null;
 }
 
 function App() {
